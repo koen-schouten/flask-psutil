@@ -15,10 +15,6 @@ def recursively_build_json(val):
         new_val = val
     return new_val
 
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
-
 
 @app.route("/api/cpu_times", methods=['GET'])
 def api_cpu_times():
