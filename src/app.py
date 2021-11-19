@@ -1,22 +1,12 @@
 from flask import Flask, jsonify, request, abort
 import psutil
 from utils.string_validation import string_is_true, string_is_false, is_valid_connection_kind, is_valid_attrs
+from utils.json_builder import recursively_build_json
+
 
 app = Flask(__name__)
 
-def recursively_build_json(val):
-    if isinstance(val, list):
-        new_val = [recursively_build_json(item) for item in val]
-    elif type(val) is dict:
-        new_val = {key:recursively_build_json(value) for (key,value) in val.items()}
-    elif hasattr(val, '_asdict'):
-        new_val = {key:recursively_build_json(value) for (key,value) in val._asdict().items()}
-    else:
-        new_val = val
-    return new_val
-
-
-@app.route("/api/cpu_times", methods=['GET'])
+@app.route("/psutil/api/cpu_times", methods=['GET'])
 def api_cpu_times():
     if string_is_true(request.args.get('percpu', '')):
         return jsonify(recursively_build_json(psutil.cpu_times(percpu=True)))
@@ -24,7 +14,7 @@ def api_cpu_times():
         return jsonify(recursively_build_json(psutil.cpu_times(percpu=False)))
 
 
-@app.route("/api/cpu_percent", methods=['GET'])
+@app.route("/psutil/api/cpu_percent", methods=['GET'])
 def api_cpu_percent():
     interval_get_var = request.args.get('interval', '')
     interval = int(interval_get_var) if interval_get_var.isdigit() else 0
@@ -34,7 +24,7 @@ def api_cpu_percent():
         return jsonify([recursively_build_json(psutil.cpu_percent(interval=interval, percpu=False))])
 
 
-@app.route("/api/cpu_count", methods=['GET'])
+@app.route("/psutil/api/cpu_count", methods=['GET'])
 def api_cpu_count():
     logical = True
     if string_is_false(request.args.get('logical', '')):
@@ -42,12 +32,12 @@ def api_cpu_count():
     return jsonify(recursively_build_json(psutil.cpu_count(logical=logical)))
 
 
-@app.route("/api/cpu_stats", methods=['GET'])
+@app.route("/psutil/api/cpu_stats", methods=['GET'])
 def api_cpu_stats():
     return jsonify(recursively_build_json(psutil.cpu_stats()))
 
 
-@app.route("/api/cpu_freq", methods=['GET'])
+@app.route("/psutil/api/cpu_freq", methods=['GET'])
 def api_cpu_freq():
     if string_is_true(request.args.get('percpu', '')):
         return jsonify(recursively_build_json(psutil.cpu_freq(percpu=True)))
@@ -55,22 +45,22 @@ def api_cpu_freq():
         return jsonify([recursively_build_json(psutil.cpu_freq(percpu=False))])
 
 
-@app.route("/api/getloadavg", methods=['GET'])
+@app.route("/psutil/api/getloadavg", methods=['GET'])
 def api_getloadavg():
     return jsonify(psutil.getloadavg())
 
 
-@app.route("/api/virtual_memory", methods=['GET'])
+@app.route("/psutil/api/virtual_memory", methods=['GET'])
 def api_virtual_memory():
     return jsonify(recursively_build_json(psutil.virtual_memory()))
 
 
-@app.route("/api/swap_memory", methods=['GET'])
+@app.route("/psutil/api/swap_memory", methods=['GET'])
 def api_swap_memory():
     return jsonify(recursively_build_json(psutil.swap_memory()._asdict()))
 
 
-@app.route("/api/disk_partitions", methods=['GET'])
+@app.route("/psutil/api/disk_partitions", methods=['GET'])
 def api_disk_partitions():
     all = False
     if string_is_true(request.args.get('all', '')):
@@ -78,7 +68,7 @@ def api_disk_partitions():
     return jsonify(recursively_build_json(psutil.disk_partitions(all=all)))
 
 
-@app.route("/api/disk_usage", methods=['GET'])
+@app.route("/psutil/api/disk_usage", methods=['GET'])
 def api_disk_usage():
     path_get_arg = request.args.get('path', '')
     path = path_get_arg if path_get_arg else "/"
@@ -88,7 +78,7 @@ def api_disk_usage():
         abort(400)
 
 
-@app.route("/api/disk_io_counters", methods=['GET'])
+@app.route("/psutil/api/disk_io_counters", methods=['GET'])
 def api_disk_io_counters():
     perdisk = False
     nowrap = True
@@ -107,7 +97,7 @@ def api_disk_io_counters():
         return jsonify(recursively_build_json(psutil.disk_io_counters(perdisk=perdisk, nowrap=nowrap)))
 
 
-@app.route("/api/net_io_counters", methods=['GET'])
+@app.route("/psutil/api/net_io_counters", methods=['GET'])
 def api_net_io_counters():
     pernic = False
     nowrap = True
@@ -127,7 +117,7 @@ def api_net_io_counters():
         return jsonify(recursively_build_json(psutil.net_io_counters(pernic=pernic, nowrap=nowrap)))
 
 
-@app.route("/api/net_connections", methods=['GET'])
+@app.route("/psutil/api/net_connections", methods=['GET'])
 def api_net_connections():
     kind = ""
     kind_get_arg = request.args.get('kind', '')
@@ -147,17 +137,17 @@ def api_net_connections():
             abort(400)
 
 
-@app.route("/api/net_if_addrs", methods=['GET'])
+@app.route("/psutil/api/net_if_addrs", methods=['GET'])
 def api_net_if_addrs():
     return jsonify(recursively_build_json(psutil.net_if_addrs()))
 
 
-@app.route("/api/net_if_stats", methods=['GET'])
+@app.route("/psutil/api/net_if_stats", methods=['GET'])
 def api_net_if_stats():
     return jsonify(recursively_build_json(psutil.net_if_stats()))
 
 
-@app.route("/api/sensors_temperatures", methods=['GET'])
+@app.route("/psutil/api/sensors_temperatures", methods=['GET'])
 def api_sensors_temperatures():
     if hasattr(psutil, 'sensors_temperatures'):
         fahrenheit = False
@@ -169,7 +159,7 @@ def api_sensors_temperatures():
         abort(405)
 
 
-@app.route("/api/sensors_fans", methods=['GET'])
+@app.route("/psutil/api/sensors_fans", methods=['GET'])
 def api_sensors_fans():
     if hasattr(psutil, 'sensors_fans'):
         return jsonify(recursively_build_json(psutil.sensors_fans().items()))
@@ -177,7 +167,7 @@ def api_sensors_fans():
         abort(405)
 
 
-@app.route("/api/sensors_battery", methods=['GET'])
+@app.route("/psutil/api/sensors_battery", methods=['GET'])
 def api_sensors_battery():
     if hasattr(psutil, 'sensors_battery'):
         return jsonify(psutil.sensors_battery())
@@ -185,23 +175,23 @@ def api_sensors_battery():
         abort(405)
 
 
-@app.route("/api/boot_time", methods=['GET'])
+@app.route("/psutil/api/boot_time", methods=['GET'])
 def api_boot_time():
     return jsonify(psutil.boot_time())
 
 
-@app.route("/api/users", methods=['GET'])
+@app.route("/psutil/api/users", methods=['GET'])
 def api_users():
     return jsonify(recursively_build_json(psutil.users()))
 
 
-@app.route("/api/pids", methods=['GET'])
+@app.route("/psutil/api/pids", methods=['GET'])
 def api_pids():
     return jsonify(psutil.pids())
 
 
-@app.route("/api/process_list", methods=['GET'])
-@app.route("/api/process_iter", methods=['GET'])
+@app.route("/psutil/api/process_list", methods=['GET'])
+@app.route("/psutil/api/process_iter", methods=['GET'])
 def api_process_iter():
     attrs = None
     ad_value = None
@@ -224,7 +214,7 @@ def api_process_iter():
                     psutil.pid_exists(p.pid)])
 
 
-@app.route("/api/pid_exists", methods=['GET'])
+@app.route("/psutil/api/pid_exists", methods=['GET'])
 def api_pid_exists():
     pid_get_var = request.args.get('pid', '')
 
@@ -234,7 +224,7 @@ def api_pid_exists():
     else:
         abort(405)
 
-@app.route("/api/process/as_dict", methods=['GET'])
+@app.route("/psutil/api/process/as_dict", methods=['GET'])
 def api_process():
     attrs = None
 
@@ -257,4 +247,3 @@ def api_process():
            abort(405) 
     else:
         return jsonify(recursively_build_json(psutil.Process().as_dict(attrs=attrs)))
-
