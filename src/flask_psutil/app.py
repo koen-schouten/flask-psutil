@@ -6,9 +6,6 @@ from utils.json_builder import recursively_build_json
 
 app = Flask(__name__)
 
-@app.route("/", methods=['GET'])
-def index():
-    return "<p>Hello World</p>"
 
 @app.route("/psutil/api/cpu_times", methods=['GET'])
 def api_cpu_times():
