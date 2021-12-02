@@ -1,5 +1,5 @@
-from utils.string_validation import string_is_true
-from utils.json_builder import recursively_build_json
+from views.utils.string_validation import string_is_true
+from views.utils.json_builder import recursively_build_json
 from flask import jsonify, request, abort
 import psutil
 

@@ -1,4 +1,4 @@
-from utils.json_builder import recursively_build_json
+from views.utils.json_builder import recursively_build_json
 from flask import jsonify
 import psutil
 
