@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, url_for, jsonify
 
 from views.cpu import *
 from views.disk import *
@@ -48,3 +48,32 @@ app.add_url_rule("/api/process/as_dict", view_func=api_process, methods=['GET'])
 app.add_url_rule("/api/sensors_temperatures", view_func=api_sensors_temperatures, methods=['GET'])
 app.add_url_rule("/api/sensors_fans", view_func=api_sensors_fans, methods=['GET'])
 app.add_url_rule("/api/sensors_battery", view_func=api_sensors_battery, methods=['GET'])
+
+#site-map
+def rule_has_no_empty_params(rule):
+    defaults = ()
+    arguments = ()
+    if rule.defaults is not None:
+        defaults = rule.defaults
+    if rule.arguments is not None:
+        arguments = rule.arguments 
+    return len(defaults) >= len(arguments)
+
+@app.route("/api")
+def site_map():
+    url_list = []
+    for rule in app.url_map.iter_rules():
+        if(rule_has_no_empty_params(rule)):
+            options = {}
+            for arg in rule.arguments:
+                options[arg] = "[{0}]".format(arg)
+
+            methods = ','.join(rule.methods)
+            url = url_for(rule.endpoint, **options)
+            url = {
+                "url" : url,
+                "methods" : methods
+            }
+            url_list.append(url)
+
+    return jsonify(url_list)
